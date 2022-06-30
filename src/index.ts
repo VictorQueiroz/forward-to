@@ -9,6 +9,7 @@ interface IProxy {
   srcHostname: string;
   srcPort: number;
   dest: URL;
+  headers: Map<string,string>;
 }
 
 (async() => {
@@ -22,6 +23,17 @@ interface IProxy {
       case process.argv[1]:
         args.shift();
         break;
+      case '-H': {
+        args.shift();
+        const proxy = proxies[proxies.length-1];
+        assert.strict.ok(proxy);
+        const value = args.shift();
+        assert.strict.ok(typeof value === 'string' && value.indexOf(':') !== -1);
+        const header = value.split(':');
+        assert.strict.ok(typeof header[0] === 'string' && typeof header[1] === 'string');
+        proxy.headers.set(header[0],header[1]);
+        break;
+      }
       default: {
         const slices = arg.split(':');
         const srcHostname = slices[0];
@@ -37,11 +49,13 @@ interface IProxy {
         );
         args.shift();
         const dest = args[0];
+        const headers = new Map<string,string>();
         assert.strict.ok(typeof dest === 'string');
         args.shift();
         proxies.push({
           srcHostname,
           srcPort,
+          headers,
           dest: new URL(dest)
         });
         break;
@@ -55,6 +69,7 @@ interface IProxy {
   });
   for(const {
     srcHostname,
+    headers,
     srcPort,
     dest
   } of proxies){
@@ -65,9 +80,11 @@ interface IProxy {
         headers: req.headers,
         agent
       }, res2 => {
-        res2.pipe(res).on('finish',() => {
-          console.log('%s:%d %s %s > %s (%d ms)',srcHostname,srcPort,req.url,req.method,dest.href,perf_hooks.performance.now() - startTime);
-        });
+        console.log('%s:%d %s %s > %s (%d ms)',srcHostname,srcPort,req.url,req.method,dest.href,perf_hooks.performance.now() - startTime);
+        for(const [k,v] of headers){
+          res.setHeader(k,v);
+        }
+        res2.pipe(res);
       }).end();
     }).listen(srcPort,srcHostname,() => {
       console.log('%s:%d > %s',srcHostname,srcPort,dest);

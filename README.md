@@ -11,3 +11,9 @@ yarn global add forward-to
 ```
 forward-to localhost:3400 https://www.google.com
 ```
+
+### Define response headers
+
+```
+forward-to localhost:3400 https://www.google.com -H "Access-Control-Allow-Origin: *"
+```
