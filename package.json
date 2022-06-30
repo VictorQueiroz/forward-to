@@ -1,0 +1,23 @@
+{
+  "name": "forward-to",
+  "version": "0.0.4",
+  "description": "Quick proxy command line tool",
+  "bin": {
+    "forward-to": "./src/index.js"
+  },
+  "scripts": {
+    "prepublishOnly": "npx tsc"
+  },
+  "files": [
+    "src/*.js",
+    "src/*.map",
+    "src/*.d.ts"
+  ],
+  "author": "Victor Queiroz <victorcqueirozg@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "16.x",
+    "ts-node": "10.x",
+    "typescript": "4.x"
+  }
+}
